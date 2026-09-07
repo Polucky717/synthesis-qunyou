@@ -2636,7 +2636,7 @@
    * ②被捕捉的小猪（收集中 20% 概率从上方落下；解锁后失败 → 左下角常驻重试入口） */
   function refreshMenuPigElements() {
     if (menuPigSurround) {
-      menuPigSurround.hidden = !challengeUnlocked;
+      menuPigSurround.hidden = false;   /* 主界面小猪图片从一开始就存在（点击收集仍需先解锁我才是群主） */
       if (challengeUnlocked && pigProgress.menuClicked) {
         menuPigSurround.classList.remove("pig-surround-shake");   /* 兜底：已收集过不再抖动 */
       }
