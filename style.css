@@ -1,0 +1,1484 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: #29272d;
+  /* 纯白页面背景：视口比「顶栏+棋盘」高时，棋盘下方不再露出淡蓝色背景条 */
+  background-color: #fff;
+  font-synthesis: none;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+button,
+canvas {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  line-height: 1;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button:focus,
+canvas:focus {
+  outline: none;
+}
+
+.app {
+  margin: 0 auto;
+  padding: 4px 0 0;
+}
+
+.topbar {
+  position: relative;
+  z-index: 10;
+  height: 52px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 4px;
+  padding: 0 9px;
+}
+
+.brand {
+  min-width: 0;
+}
+
+.brand h1 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.brand p {
+  margin: 3px 0 0;
+  color: #6a7684;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.metric {
+  min-width: 44px;
+  height: 42px;
+  padding: 3px 4px;
+  border-radius: 12px;
+  background-color: #eef3f8;
+  background-image: radial-gradient(circle, #eef3f8 0%, #e4ebf2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.metric span {
+  color: #6a7684;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.metric strong {
+  font-size: 16px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.metric-score strong {
+  color: #1f7fb8;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 20 / 31;
+  overflow: hidden;
+  color-scheme: only light;
+  forced-color-adjust: none;
+  background-color: #f7fcff;
+  background-image: linear-gradient(to top, #a4d7f2 0%, #e9f6fe 100%);
+  isolation: isolate;
+}
+
+#gameCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+  z-index: 1;
+}
+
+/* 解锁演出背景淡出层：盖住棋盘渐变背景（在画布下方，小猪不受影响） */
+.board-whiteout {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Q8 Erosion 挑战失败黑化层：盖住整个画面（画布之上），逐渐变为纯黑 */
+.ero-blackout {
+  position: absolute;
+  inset: 0;
+  background: #050506;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  padding: 22px;
+  background-color: rgba(251, 254, 255, 0.94);
+  display: grid;
+  place-items: center;
+}
+
+/* 选择/结算/挑战弹窗覆盖整个视口（含棋盘下方的页面背景），
+ * 否则视口比应用高时底部会露出一条灰色页面背景。
+ * z-index 高于顶栏（10）：卡片较高居中时上端不再被标题/提示/分数一栏挡住；
+ * overflow-y + 卡片 margin:auto：卡片超出视口时可滚动到顶，不会被裁掉上端 */
+#targetOverlay,
+#gameOverOverlay,
+#challengeOverlay {
+  position: fixed;
+  z-index: 20;
+  overflow-y: auto;
+}
+
+/* 小猪解锁演出（开场字幕/规则页）：背景纯白，小猪在方框内展示、不被白底盖住 */
+#challengeOverlay.challenge-overlay-white {
+  background: #ffffff;
+}
+
+/* Q8 Erosion 开场：背景始终保持黑色 */
+#challengeOverlay.challenge-overlay-black {
+  background: #0a0a0c;
+}
+
+#challengeOverlay.challenge-overlay-black .challenge-card {
+  background: transparent;
+  border-color: #ffffff;   /* 边框为白色 */
+  box-shadow: none;
+}
+
+#targetOverlay .overlay-card,
+#gameOverOverlay .overlay-card,
+#challengeOverlay .overlay-card {
+  margin: auto;
+}
+
+.overlay-card {
+  width: 100%;
+  max-width: 326px;
+  padding: 25px 23px 23px;
+  border: 1px solid #d3dde6;
+  border-radius: 24px;
+  background-color: #fbfeff;
+  box-shadow: 0 14px 34px rgba(38, 60, 78, 0.12);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #1f7fb8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.overlay h2 {
+  margin: 0;
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.primary-button,
+.small-button,
+.icon-button {
+  cursor: pointer;
+  transition: transform 100ms ease, opacity 100ms ease, filter 100ms ease;
+}
+
+.primary-button:active,
+.small-button:active,
+.icon-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.primary-button {
+  width: 100%;
+  min-height: 49px;
+  border-radius: 15px;
+  background-color: #1f8fd0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: 0 5px 0 #14689c;
+}
+
+.game-over-card h2 {
+  margin-bottom: 18px;
+}
+
+.result-row {
+  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.result-row > div {
+  padding: 11px 8px;
+  border-radius: 13px;
+  background-color: #eef3f0;
+}
+
+.result-row > div > span {
+  display: block;
+  margin-bottom: 2px;
+  color: #66707c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.result-row > div > strong {
+  display: block;
+  color: #1c5f8e;
+  font-size: 20px;
+}
+
+.highest-item {
+  width: 64px;
+  height: 64px;
+  margin: 4px auto 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: #fbfeff;
+  background-image: linear-gradient(120deg, #fbfeff 0%, #e8f3fb 100%);
+  display: grid;
+  place-items: center;
+}
+
+.highest-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.new-record {
+  margin: -4px 0 13px;
+  color: #b83240;
+  font-weight: 800;
+}
+
+.small-button,
+.icon-button {
+  height: 42px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  background-color: #eef3f8;
+  background-image: radial-gradient(circle, #eef3f8 0%, #e4ebf2 100%);
+  color: #47525e;
+}
+
+.small-button:disabled {
+  cursor: default;
+  opacity: 0.42;
+  transform: none;
+}
+
+.icon-button {
+  width: 42px;
+  min-width: 42px;
+  display: grid;
+  place-items: center;
+}
+
+.restart-button {
+  min-width: 46px;
+  padding: 0 6px;
+}
+
+.sound-icon {
+  position: relative;
+  width: 20px;
+  height: 18px;
+  display: block;
+}
+
+.sound-icon::before {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 13px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-clip-path: polygon(0 36%, 30% 36%, 72% 5%, 72% 95%, 30% 64%, 0 64%);
+  clip-path: polygon(0 36%, 30% 36%, 72% 5%, 72% 95%, 30% 64%, 0 64%);
+  content: "";
+}
+
+.sound-icon::after {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 6px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-radius: 0 50% 50% 0;
+  content: "";
+}
+
+.sound-icon.is-muted::after {
+  top: 8px;
+  right: 0;
+  width: 19px;
+  height: 2px;
+  border: 0;
+  border-radius: 999px;
+  background-color: currentColor;
+  transform: rotate(-45deg);
+}
+
+.confirm-card h2 {
+  margin-bottom: 10px;
+}
+
+.confirm-copy {
+  margin: 0 0 18px;
+  color: #6a7684;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.confirm-button {
+  background-color: #1f8fd0;
+  background-image: none;
+  color: #fff;
+}
+
+/* 手机使用上面的默认全宽布局；电脑端只限制游戏区域的最大宽度。
+ * 列宽由视口高度反推（棋盘 20/31 + 顶栏 52 + 顶距 4），
+ * 棋盘恰好填满顶栏以下空间，不再在屏幕下方露出白色条。 */
+@media (min-width: 449px) {
+  .app {
+    max-width: calc((100vh - 56px) * 20 / 31);
+  }
+}
+
+@media (min-width: 449px) and (hover: hover) and (pointer: fine) {
+  .primary-button:hover {
+    filter: brightness(1.05);
+  }
+
+  .small-button:hover:not(:disabled),
+  .icon-button:hover {
+    filter: brightness(0.97);
+  }
+}
+
+@supports not (aspect-ratio: 1 / 1) {
+  .board::before {
+    display: block;
+    padding-top: 155%;
+    content: "";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== P3: 合成目标选择弹窗（39 位群友，3 列排布便于浏览） ===== */
+.target-card {
+  width: min(392px, 94%);
+  overflow: hidden;
+  padding-right: 6px;
+}
+
+/* Q4: 已合成成功统计行（选择界面顶部常显） */
+.target-stats {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #43525f;
+  text-align: center;
+}
+
+/* 滚动发生在内层容器：滚动条离圆角边框远，不顶到卡片边缘 */
+.target-scroll {
+  max-height: min(56vh, 470px);
+  overflow-y: auto;
+  overflow-x: hidden;   /* 长昵称溢出时隐藏横向滚动条（底部灰色长条） */
+  margin: 12px 2px 2px;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 143, 208, 0.4) transparent;
+}
+
+.target-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.target-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.target-scroll::-webkit-scrollbar-thumb {
+  background: rgba(31, 143, 208, 0.38);
+  border-radius: 999px;
+}
+
+.target-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 143, 208, 0.6);
+}
+
+.target-grid {
+  display: grid;
+  /* minmax(0,1fr)：长昵称不再把列撑破、避免出现横向滚动灰条 */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+
+.badge-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 7px 3px 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(58, 74, 88, 0.14);
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, opacity 1.2s ease;
+}
+
+.badge-option img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+}
+
+/* Q8 异常群友选择卡：黑色在下白色在上的渐变盖住下半部——
+ * 黑色遮住群友昵称与部分的下半边头像（出现异常） */
+.badge-option.target-ero {
+  overflow: hidden;
+}
+
+.badge-option.target-ero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58%;
+  background: linear-gradient(to top, #0c0d10 0%, #0c0d10 52%, rgba(12, 13, 16, 0) 100%);
+  pointer-events: none;
+}
+
+/* Q4: 已合成成功群友的角标（压在头像下沿） */
+.badge-option .done-tag {
+  position: absolute;
+  top: 51px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #1fa564;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(20, 60, 40, 0.3);
+}
+
+/* ===== Q6: 群主彩蛋（Chespy） ===== */
+/* 群主卡片：选择框颜色变深，头像下方黄色「群主」框 */
+.badge-option.egg-owner {
+  background: #31363f;
+  border-color: #23272e;
+}
+
+.badge-option.egg-owner .nickname {
+  color: #e2e6ec;
+}
+
+/* 特异性需压过 .badge-option span 的深色，保证填充底上文字为白色 */
+.badge-option .owner-tag {
+  margin: -1px 0 0;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: #ffd700;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+}
+
+/* 红色填充白字「禁言」框（头像下方，彩蛋展示态可点击）；已禁言变灰 */
+.badge-option .mute-tag {
+  margin: -1px 0 0;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: #e03131;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.badge-option:not(.muted) .mute-tag {
+  cursor: pointer;
+}
+
+.badge-option .mute-tag.done {
+  background: #b9a2a2;
+  color: #fff;
+  cursor: default;
+}
+
+/* 已禁言：选择框变淡，点击无效 */
+.badge-option.muted {
+  opacity: 0.45;
+}
+
+/* 终章渐隐（除群主卡片外全部 → 群主卡片最后；全部放慢为 3s） */
+.target-stats, .target-actions, .target-card h2, .eyebrow {
+  transition: opacity 3s ease;
+}
+
+.egg-fade {
+  opacity: 0 !important;
+}
+
+/* 终章电影模式：整个游戏界面淡出，只剩群主卡片，随后全白进入特殊挑战 */
+.topbar, #gameCanvas, .target-card, .overlay {
+  transition: opacity 3s ease, background-color 3s ease;
+}
+
+.egg-cinema .topbar {
+  opacity: 0;
+}
+
+.egg-cinema #gameCanvas {
+  opacity: 0;
+}
+
+.egg-cinema .target-card {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;   /* 边框也是竖线来源，一并隐去 */
+}
+
+.egg-cinema .overlay {
+  background: transparent;
+}
+
+/* 第一次淡出：连滑动条一起隐藏（只限选择卡片内的滚动容器，
+ * 挑战选择界面的同名滚动容器不受影响、保持可滑动） */
+.egg-cinema .target-card .target-scroll {
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+.egg-cinema .target-card .target-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cinema-white {
+  position: absolute;
+  inset: 0;
+  z-index: 4;            /* 盖住棋盘渐变与画布，低于选择覆盖层（z=5），群主卡片浮在白幕上 */
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 3s ease;
+}
+
+/* ===== Q6: 特殊挑战「我才是群主」 ===== */
+.challenge-overlay {
+  z-index: 60;
+}
+
+.challenge-card {
+  width: min(392px, 94%);
+  overflow: hidden;
+  padding-right: 6px;
+}
+
+.challenge-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 10px 36px;
+  transition: opacity 1s ease;
+}
+
+.challenge-intro.challenge-fade-out {
+  opacity: 0;
+}
+
+.challenge-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ffd700;
+  background: #fff;
+}
+
+.challenge-title {
+  margin: 6px 0 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: #2b3540;
+  letter-spacing: 0.12em;
+}
+
+.challenge-subtitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #b8860b;
+  letter-spacing: 0.34em;
+}
+
+.challenge-pick {
+  transition: opacity 0.8s ease;
+}
+
+.challenge-note {
+  margin: 10px 0 0;
+  text-align: center;
+}
+
+.challenge-note p {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #8a939c;
+}
+
+.challenge-confirm {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.challenge-confirm p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333a42;
+}
+
+/* Q6: 确认禁言的确定键用绿底白字 */
+#challengeConfirmYesButton.confirm-button {
+  background-color: #1fa564;
+  background-image: none;
+  color: #fff;
+}
+
+.challenge-result {
+  text-align: center;
+  padding: 20px 6px 10px;
+}
+
+.challenge-result h2 {
+  margin: 0 0 18px;
+}
+
+/* 合成成功：只有「继续」，居中 */
+.result-actions-center {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.result-actions-center .small-button {
+  min-width: 148px;
+}
+
+/* 挑战失败：重来（红底白字）在左，继续（蓝底白字）在右 */
+.result-actions-split {
+  grid-template-columns: 1fr 1fr;
+}
+
+.result-actions-split #challengeRetryButton {
+  background-color: #e03131;
+  background-image: none;
+  color: #fff;
+  border: 2px solid #e03131;
+}
+
+.result-actions-split #challengeContinueButton {
+  background-color: #1f8fd0;
+  background-image: none;
+  color: #fff;
+  border: 2px solid #1f8fd0;
+}
+
+/* 禁言提示弹窗：红色 ✕ + 「该群友已被禁言」 */
+.mute-toast {
+  position: fixed;
+  top: 24%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(20, 40, 60, 0.28);
+  z-index: 70;
+  pointer-events: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333a42;
+  animation: targetBannerIn 1.9s ease forwards;
+}
+
+.mute-toast .toast-x {
+  color: #e03131;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* hidden 必须真正隐藏（否则 display:flex 会覆盖 UA 的 [hidden] 规则，
+ * 导致动画无法在下一次禁言时重启） */
+.mute-toast[hidden] {
+  display: none;
+}
+
+.badge-option span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #46505c;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.badge-option:hover {
+  border-color: #1f8fd0;
+  box-shadow: 0 4px 14px rgba(31, 143, 208, 0.18);
+  transform: translateY(-1px);
+}
+
+.target-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+#targetRandomButton {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+#targetCancelButton {
+  width: 100%;
+  padding: 10px 18px;
+}
+
+/* ===== 选择目标成功横幅 & 胜利庆祝 ===== */
+.target-banner {
+  position: fixed;
+  top: 34%;
+  left: 50%;
+  max-width: min(92vw, 480px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  box-shadow: 0 18px 50px rgba(20, 70, 110, 0.30);
+  z-index: 60;
+  pointer-events: none;
+  animation: targetBannerIn 1.9s ease forwards;
+}
+
+.target-banner img {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(20, 70, 110, 0.25);
+}
+
+/* Q8: Erosion 挑战目标横幅：黑底白字 */
+.target-banner-dark {
+  background: rgba(12, 13, 16, 0.96);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.target-banner-dark img {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.target-banner-dark .banner-copy > span {
+  color: #f5f6f8;
+}
+
+.target-banner-dark .banner-copy > span.banner-sub {
+  color: #f2c14e;
+}
+
+.banner-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* 长昵称/统一标题都做省略，避免横幅撑出屏幕 */
+.banner-copy > span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 22px;
+  font-weight: 700;
+  color: #23506e;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.banner-sub {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f7fb8;
+  letter-spacing: 2px;
+}
+
+/* 达成目标：金色成功样式 */
+.target-banner.achieve {
+  background: linear-gradient(135deg, #fffbe8 0%, #fff3d9 100%);
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.45), 0 20px 54px rgba(140, 96, 16, 0.30);
+  animation-duration: 2.2s;
+}
+
+.target-banner.achieve span {
+  color: #7a5a12;
+}
+
+/* ===== 主界面 + 特殊挑战菜单 ===== */
+/* 主界面打开：顶栏（标题/游玩提示/分数/按钮）整体隐藏 */
+body.menu-open .topbar {
+  display: none;
+}
+
+/* ===== Q8 Erosion：黑底标题栏主题 ===== */
+/* 挑战对局中：「合成大群友」所在一栏全部黑底白字 */
+body.ero-title-dark .topbar {
+  background: #0b0c10;
+  transition: background 0.6s ease;
+}
+
+body.ero-title-dark .topbar .brand h1,
+body.ero-title-dark .topbar .brand p,
+body.ero-title-dark .topbar .score,
+body.ero-title-dark .topbar .score-label {
+  color: #ffffff;
+}
+
+/* 解锁演出：黑色完全遮住标题栏 */
+body.ero-title-covered .topbar {
+  background: #050506;
+  transition: background 1s ease;
+}
+
+body.ero-title-covered .topbar .brand h1,
+body.ero-title-covered .topbar .brand p,
+body.ero-title-covered .topbar .score,
+body.ero-title-covered .topbar .score-label {
+  color: #050506;
+}
+
+/* 挑战失败：标题栏文字和框由下往上变为黑色 */
+body.ero-title-fail .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  background: #050506;
+  transform-origin: bottom;
+  animation: eroTitleFail 1.2s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes eroTitleFail {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #f4faff;
+}
+
+/* display:flex 会覆盖 UA 的 [hidden]，必须显式关掉（同 mute-toast） */
+.menu-overlay[hidden] {
+  display: none;
+}
+
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(340px, 92%);
+  padding: 30px 26px 28px;
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #23506e;
+}
+
+.menu-start {
+  width: 100%;
+  padding: 13px 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.menu-challenge {
+  width: 100%;
+  padding: 13px 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background-color: #fff;
+  color: #1f7fb8;
+  /* 用内阴影画描边：不占布局空间，按键尺寸与「开始游玩」完全一致 */
+  box-shadow: inset 0 0 0 2px #1f8fd0;
+}
+
+.menu-challenge.locked {
+  color: #98a4ae;
+  box-shadow: inset 0 0 0 2px #c4cfd8;
+}
+
+.challenge-menu-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(360px, 94%);
+  padding: 24px 20px 20px;
+}
+
+/* 「特殊挑战」眉标加大 */
+.challenge-menu-card .eyebrow {
+  font-size: 17px;
+  letter-spacing: 0.22em;
+}
+
+.challenge-menu-card h2 {
+  margin: 0;
+  font-size: 21px;
+  color: #23506e;
+}
+
+.challenge-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(52vh, 430px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.challenge-menu-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #d3dde6;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.challenge-menu-entry-locked {
+  cursor: default;
+  background: #f6f8fa;
+}
+
+/* Q8 菜单第三栏异常态：黑色在下白色在上的渐变盖住下方（解锁提示被遮、🔒头像遮半），
+ * 上方标题「？？？」保持可见 */
+.challenge-menu-entry-ero {
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.challenge-menu-entry-ero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 62%;
+  background: linear-gradient(to top, #0c0d10 0%, #0c0d10 55%, rgba(12, 13, 16, 0) 100%);
+  pointer-events: none;
+}
+
+/* Q8 失败后重试入口：选项全黑（点击询问是否重新挑战） */
+.challenge-menu-entry-ero-full {
+  background: #0b0c10;
+  border-color: #26272c;
+  cursor: pointer;
+}
+
+.challenge-menu-entry-ero-full .challenge-menu-name {
+  color: #f2f4f7;
+}
+
+.challenge-menu-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;   /* 特殊挑战菜单头像：方形（圆角方块） */
+  overflow: hidden;
+  background: #eef3f7;
+  font-size: 20px;
+}
+
+.challenge-menu-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.challenge-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.challenge-menu-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #333a42;
+}
+
+.challenge-menu-hint {
+  font-size: 12px;
+  color: #8a939c;
+}
+
+/* 主界面提示弹窗（未解锁等），样式沿用禁言弹窗 */
+.menu-toast {
+  position: fixed;
+  top: 24%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  padding: 13px 24px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(20, 40, 60, 0.28);
+  z-index: 95;
+  pointer-events: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333a42;
+  animation: targetBannerIn 1.9s ease forwards;
+}
+
+.menu-toast[hidden] {
+  display: none;
+}
+
+/* 结算卡三个选项：自上而下（继续合成 / 再玩一次 / 回到主界面） */
+.over-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+@keyframes targetBannerIn {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  16% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  28% { transform: translate(-50%, -50%) scale(1); }
+  76% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -86%) scale(1); }
+}
+
+/* ===== Q7 第二个特殊挑战「直到群友变成一群小猪」 ===== */
+/* ① 主界面「被群友包围了」：点击抖动收集一只小猪 */
+.menu-pig-surround {
+  width: 118px;
+  height: auto;
+  border-radius: 14px;
+  margin-top: 14px;
+  border: 2px solid #dfe7ee;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(31, 45, 61, 0.12);
+}
+
+@keyframes pigSurroundShake {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(-7deg) scale(1.04); }
+  40% { transform: rotate(6deg); }
+  60% { transform: rotate(-5deg) scale(1.03); }
+  80% { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.menu-pig-surround.pig-surround-shake {
+  animation: pigSurroundShake 0.6s ease;
+}
+
+/* ②「被捕捉的小猪」：收集中慢速从顶部掉落（无边框、不挡选择框）；
+ * 水平：桌面端悬停在游玩卡片（宽 min(392px, 94%) 居中）左侧留白，窄屏贴左上角；
+ * 垂直：一律停在屏幕上端；挑战失败后常驻左下角作重试入口 */
+.pig-captured {
+  position: fixed;
+  left: calc(50% - min(196px, 47vw) - 96px);   /* 桌面端：卡片左边缘再让出小猪宽 + 间距 */
+  top: calc(env(safe-area-inset-top, 0px) + 32px);   /* 上端（避开刘海/状态栏） */
+  width: 84px;
+  height: auto;
+  transform: translateY(-140%);                /* 待机：藏在屏幕上方外 */
+  z-index: 95;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* 像一只真的小猪掉下来：短距离下坠（图片完全进入屏幕即可）+ 翻滚摇摆 + 落地小弹跳后悬停 */
+.pig-captured.pig-captured-drop {
+  animation: pigCaptureFall 2.8s cubic-bezier(0.5, 0, 0.62, 1) forwards;
+}
+
+@keyframes pigCaptureFall {
+  0%   { transform: translateY(-45%) rotate(0deg); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translateY(-16%) rotate(-7deg); }
+  62%  { transform: translateY(0%) rotate(6deg); }
+  76%  { transform: translateY(12%) rotate(-5deg); }
+  86%  { transform: translateY(8%) rotate(-3deg); }   /* 落地回弹 */
+  100% { transform: translateY(11%) rotate(0deg); opacity: 1; }   /* 悬停：上端偏左 */
+}
+
+/* 点击后向上移出屏幕 */
+.pig-captured.pig-captured-leave {
+  animation: pigCaptureLeave 1s ease-in forwards;
+}
+
+@keyframes pigCaptureLeave {
+  from { transform: translateY(11%) rotate(0deg); }
+  to   { transform: translateY(-140%) rotate(-12deg); }
+}
+
+/* 下降途中被点到：由 JS 读取实时位置后用 transition 平滑飞回（pig-captured-return 仅作标记） */
+.pig-captured.pig-captured-return {
+  pointer-events: auto;
+}
+
+/* 窄屏（手机）：无侧边留白 → 水平贴左上角（垂直不变，仍在上端） */
+@media (max-width: 620px) {
+  .pig-captured {
+    left: calc(env(safe-area-inset-left, 0px) + 10px);
+  }
+}
+
+/* 挑战失败后的重试入口：位置与平时「被捕捉的小猪」刷新悬停位置一致（上端偏左） */
+.pig-captured.pig-captured-retry {
+  width: 84px;
+  transform: none;
+  animation: pigRetryFloat 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes pigRetryFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+/* 失败重试弹窗：🐖要重新挑战吗？🐖（退出红底白字 / 来！！！蓝底白字） */
+.pig-retry-overlay {
+  z-index: 96;
+}
+
+.pig-retry-title {
+  margin: 0 0 16px;
+}
+
+.danger-button {
+  background-color: #e03131;
+  background-image: none;
+  color: #fff;
+  border: 2px solid #e03131;
+}
+
+/* 解锁演出：唱片猪居中（中上方）+ 两行挑战名，随后整体渐隐 */
+.challenge-pig-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 10px 36px;
+  transition: opacity 1.6s ease;
+}
+
+/* Q8 Erosion 开场：黑底白字 + 白边框，格式与小猪开场一致 */
+.challenge-ero-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 10px 36px;
+  transition: opacity 1.6s ease;
+}
+
+.challenge-ero-intro .challenge-ero-title {
+  margin: 0;
+  color: #ffffff;   /* 第一行「特殊挑战」白色 */
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+}
+
+.challenge-ero-intro .challenge-ero-subtitle {
+  margin: 0;
+  color: #f2c14e;   /* 「Erosion」金色 */
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 18px rgba(242, 193, 78, 0.35);
+}
+
+.challenge-ero-hero {
+  width: 150px;
+  height: 150px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 4px solid #ffffff;   /* 头像边框白色 */
+  background: #101116;
+  animation: pigHeroReveal 0.9s ease-out;
+}
+
+.challenge-pig-intro.challenge-fade-out {
+  opacity: 0;
+}
+
+.challenge-pig-hero {
+  width: 150px;
+  height: 150px;
+  border-radius: 14px;   /* 展示场景使用正方形 */
+  object-fit: cover;
+  border: 4px solid #f7a8c4;
+  background: #fff;
+  animation: pigHeroReveal 0.9s ease-out;   /* 画布小猪平移淡出后，动图在方框内淡入接管 */
+}
+
+@keyframes pigHeroReveal {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 规则页：可整体滑动但不显示滑动条 */
+.challenge-pig-rules {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 26px 12px 30px;
+  max-height: min(78vh, 560px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.challenge-pig-rules::-webkit-scrollbar {
+  display: none;
+}
+
+.pig-rules-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #2b3540;
+  letter-spacing: 0.1em;
+}
+
+.pig-rule-line {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333a42;
+  text-align: center;
+  line-height: 1.55;
+}
+
+.pig-rule-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pig-rule-row img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;   /* 展示场景使用正方形 */
+  border: 2px solid #e3e9ef;
+  background: #fff;
+}
+
+.pig-rule-op {
+  font-size: 18px;
+  font-weight: 900;
+  color: #5b6570;
+}
+
+.pig-rule-op.pig-rule-ban {
+  color: #e03131;
+}
+
+.pig-rule-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.pig-rule-actions .confirm-button {
+  min-width: 148px;
+}
+
+/* 分步渐显（慢） */
+.pig-stage {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.pig-stage.pig-stage-shown {
+  opacity: 1;
+  transform: none;
+}
+
+/* 小猪挑战结算：文字与按键之间的随机胜/败图片 */
+.challenge-result-image {
+  display: block;
+  max-width: 100%;
+  max-height: 168px;
+  margin: 0 auto 16px;
+  border-radius: 12px;
+  border: 2px solid #e3e9ef;
+  object-fit: contain;
+  background: #fff;
+}
+
+.challenge-result-image[hidden] {
+  display: none;
+}
