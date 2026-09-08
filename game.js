@@ -829,6 +829,12 @@
 
   /* 「回到主界面」：从选择菜单直接返回主界面（进行中的对局将被放弃，重新开始时重开） */
   function closeTargetPickerToMenu() {
+    if (pigUnlockActive && !pigProgress.pigMade) {
+      /* 放弃解锁对局回主界面：不计作尝试——旋转小猪重新化身选择页群友，菜单不出现吊猪传送门 */
+      pigUnlockActive = false;
+      pigProgress.attempted = false;
+      savePigProgress();
+    }
     targetOverlay.hidden = true;
     resetEggSession();
     pickerCanCancel = false;
@@ -942,6 +948,12 @@
     }
     if (!college || mutedKeys[college.key]) {
       return;  /* 已禁言的群友不能被选为目标（点击无任何效果） */
+    }
+    if (pigUnlockActive && !pigProgress.pigMade) {
+      /* 换目标放弃解锁对局：不计作尝试——旋转小猪重新化身选择页群友，菜单不出现吊猪传送门 */
+      pigUnlockActive = false;
+      pigProgress.attempted = false;
+      savePigProgress();
     }
     resetEggSession();  /* Q6: 进入对局重置展示态（禁言记录保留，之后可回彩蛋继续禁言） */
     targetCollegeKey = college.key;
@@ -1668,6 +1680,12 @@
     pigGlowBody = null;
     pigBlastActive = false;
     pigFly = null;
+    if (pigCaptured) {
+      /* 经悬挂小猪重试入口进入挑战后，左上角小猪隐藏（回主界面时刷新逻辑恢复） */
+      pigCaptured.classList.remove("pig-captured-retry");
+      pigCaptured.classList.remove("pig-captured-drop");
+      pigCaptured.hidden = true;
+    }
     challengeKind = "pig";
     challengeActive = true;
     challengeEntry = "menu";
@@ -2912,12 +2930,14 @@
      * 「重开」：小猪挑战与「从特殊挑战菜单重新游玩的我才是群主」可用；
      * Erosion 仅解锁演出的首局禁用重开和退出，解锁后从菜单进入恢复正常；
      * 彩蛋首入的群主挑战禁用重开和退出（解锁对局一锤定音）；
+     * 未通关的小猪挑战禁用重开和退出（通关后从菜单重进恢复正常）；
      * 结算等待期（成功礼花 / 失败定格 → 结算面板弹出前）锁定重开与退出，
      * 防止点击清除结算定时器导致结算面板不再弹出；
      * 各挑战最高分独立计算 */
     var ownerFromMenu = challengeActive && challengeKind === "owner" && challengeEntry === "menu";
-    var restartAllowed = !challengeActive || challengeKind === "pig" || ownerFromMenu
-      || (challengeKind === "ero" && challengeEntry !== "unlock");
+    var pigUnpassed = challengeActive && challengeKind === "pig" && !pigProgress.passed;
+    var restartAllowed = (!challengeActive || challengeKind === "pig" || ownerFromMenu
+      || (challengeKind === "ero" && challengeEntry !== "unlock")) && !pigUnpassed;
     var resultPending = challengeActive && (challengePhase === "success" || challengePhase === "failed");
     var ownerEggEntry = challengeActive && challengeKind === "owner" && challengeEntry === "egg";
     if (challengeActive) {
@@ -2935,6 +2955,7 @@
     targetButton.disabled = mode !== "playing"
       || (challengeActive && challengeKind === "ero" && challengeEntry === "unlock")
       || ownerEggEntry
+      || pigUnpassed
       || resultPending;
   }
 
