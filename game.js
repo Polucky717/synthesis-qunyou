@@ -809,6 +809,7 @@
       eroEndAnomalyGame();
     }
     closeMainMenu();   /* 主界面（若还开着）先收起 */
+    refreshMenuPigElements();   /* 悬挂小猪只在主界面显示：选择页隐藏 */
     pickerCanCancel = mode === "playing";
     if (pickerCanCancel) {
       mode = "selecting";
@@ -1832,6 +1833,7 @@
       challengeMenuOverlay.hidden = false;
     }
     syncTopbarVisibility();
+    refreshMenuPigElements();   /* 悬挂小猪只在主界面显示：挑战菜单中隐藏 */
   }
 
   function closeChallengeMenu() {
@@ -1951,7 +1953,9 @@
             : COLLEGES[0].key;
           closeChallengeMenu();
           startPigUnlockGame(member);
-        } : (collecting ? null : function () {
+        } : (collecting || !pigPassed ? null : function () {
+          /* 未通关（pigMade 未 passed）：菜单不提供入口——重进只能走左下角悬挂小猪；
+           * 通关后可从菜单反复游玩 */
           closeChallengeMenu();
           startPigChallenge();
         })
@@ -2663,7 +2667,9 @@
     if (pigCaptured) {
       var retryMode = challengeUnlocked && pigProgress.pigMade && !pigProgress.passed;
       var fallActive = pigCaptured.classList.contains("pig-captured-drop");
-      pigCaptured.hidden = !retryMode && !fallActive;
+      var menuVisible = !!(mainMenuOverlay && !mainMenuOverlay.hidden);
+      /* 悬挂小猪只在主界面显示：选择页 / 对局 / 挑战菜单等其它界面一律隐藏 */
+      pigCaptured.hidden = !menuVisible || (!retryMode && !fallActive);
       pigCaptured.classList.toggle("pig-captured-retry", retryMode);
     }
   }
@@ -3044,6 +3050,7 @@
     newRecordElement.hidden = true;
     updateScoreDisplay(false);
     updateControls();
+    refreshMenuPigElements();   /* 悬挂小猪只在主界面显示：开局即隐藏 */
   }
 
   function startFailureExplosion() {
