@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f2f9ff">
-  <meta id="pageDescription" name="description" content="QQ 群友头像合成小游戏">
-  <title>合成大群友</title>
+  <meta id="pageDescription" name="description" content="QQ 缇ゅ弸澶村儚鍚堟垚灏忔父鎴?>
+  <title>鍚堟垚澶х兢鍙?/title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2312b7f5'/%3E%3Ctext x='32' y='43' font-size='28' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3E%E7%BE%A4%3C/text%3E%3C/svg%3E" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=34">
 </head>
@@ -13,37 +13,37 @@
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <h1 id="gameTitle">合成大群友</h1>
-        <p>左右拖动·松手落下</p>
+        <h1 id="gameTitle">鍚堟垚澶х兢鍙?/h1>
+        <p>宸﹀彸鎷栧姩路鏉炬墜钀戒笅</p>
       </div>
 
       <div class="metric metric-score">
-        <span>得分</span>
+        <span>寰楀垎</span>
         <strong id="score">0</strong>
       </div>
 
       <div class="metric">
-        <span>最高</span>
+        <span>鏈€楂?/span>
         <strong id="bestScore">0</strong>
       </div>
 
       <div class="header-actions" id="headerActions">
-        <button class="icon-button" id="soundButton" type="button" tabindex="-1" aria-label="关闭声音" aria-pressed="true">
+        <button class="icon-button" id="soundButton" type="button" tabindex="-1" aria-label="鍏抽棴澹伴煶" aria-pressed="true">
           <span class="sound-icon" id="soundIcon" aria-hidden="true"></span>
         </button>
-        <button class="small-button" id="targetButton" type="button" tabindex="-1">换目标</button>
-        <button class="small-button restart-button" id="restartButton" type="button" tabindex="-1">重开</button>
+        <button class="small-button" id="targetButton" type="button" tabindex="-1">鎹㈢洰鏍?/button>
+        <button class="small-button restart-button" id="restartButton" type="button" tabindex="-1">閲嶅紑</button>
       </div>
     </header>
 
     <div class="board">
-      <!-- 解锁演出：背景淡出层（位于画布下方，淡入后棋盘背景消失、小猪仍可见） -->
+      <!-- 瑙ｉ攣婕斿嚭锛氳儗鏅贰鍑哄眰锛堜綅浜庣敾甯冧笅鏂癸紝娣″叆鍚庢鐩樿儗鏅秷澶便€佸皬鐚粛鍙锛?-->
       <div class="board-whiteout" id="boardWhiteout" hidden></div>
-      <!-- Q8 Erosion 挑战失败：整个画面逐渐黑化遮罩 -->
+      <!-- Q8 Erosion 鎸戞垬澶辫触锛氭暣涓敾闈㈤€愭笎榛戝寲閬僵 -->
       <div class="ero-blackout" id="eroBlackout" hidden></div>
       <canvas id="gameCanvas" width="1024" height="1587"></canvas>
 
-      <!-- Q6: 终章白幕——盖住棋盘蓝色渐变，随 cinema 淡入成纯白（始终在场，靠透明度切换） -->
+      <!-- Q6: 缁堢珷鐧藉箷鈥斺€旂洊浣忔鐩樿摑鑹叉笎鍙橈紝闅?cinema 娣″叆鎴愮函鐧斤紙濮嬬粓鍦ㄥ満锛岄潬閫忔槑搴﹀垏鎹級 -->
       <div class="cinema-white" id="cinemaWhite"></div>
 
       <div class="target-banner" id="targetBanner" hidden>
@@ -56,123 +56,123 @@
 
       <div class="overlay" id="gameOverOverlay" role="dialog" aria-modal="true" aria-labelledby="gameOverMessage" hidden>
         <div class="overlay-card game-over-card">
-          <p class="eyebrow">本局结束</p>
-          <h2 id="gameOverMessage">差一点就更大了</h2>
+          <p class="eyebrow">鏈眬缁撴潫</p>
+          <h2 id="gameOverMessage">宸竴鐐瑰氨鏇村ぇ浜?/h2>
           <div class="result-row">
-            <div><span>本局得分</span><strong id="finalScore">0</strong></div>
+            <div><span>鏈眬寰楀垎</span><strong id="finalScore">0</strong></div>
             <div>
-              <span>最高等级</span>
+              <span>鏈€楂樼瓑绾?/span>
               <div class="highest-item">
                 <img id="highestItemImage" alt="">
               </div>
             </div>
           </div>
-          <p class="new-record" id="newRecord" hidden>新纪录！</p>
+          <p class="new-record" id="newRecord" hidden>鏂扮邯褰曪紒</p>
           <div class="over-actions">
-            <button class="primary-button" id="continueMergeButton" type="button" tabindex="-1">继续合成</button>
-            <button class="primary-button" id="againButton" type="button" tabindex="-1">再玩一次</button>
-            <button class="small-button" id="menuReturnButton" type="button" tabindex="-1">回到主界面</button>
+            <button class="primary-button" id="continueMergeButton" type="button" tabindex="-1">缁х画鍚堟垚</button>
+            <button class="primary-button" id="againButton" type="button" tabindex="-1">鍐嶇帺涓€娆?/button>
+            <button class="small-button" id="menuReturnButton" type="button" tabindex="-1">鍥炲埌涓荤晫闈?/button>
           </div>
         </div>
       </div>
 
       <div class="overlay" id="restartConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle" hidden>
         <div class="overlay-card confirm-card">
-          <h2 id="restartConfirmTitle">重新开始？</h2>
-          <p class="confirm-copy">当前进度将会丢失。</p>
+          <h2 id="restartConfirmTitle">閲嶆柊寮€濮嬶紵</h2>
+          <p class="confirm-copy">褰撳墠杩涘害灏嗕細涓㈠け銆?/p>
           <div class="confirm-actions">
-            <button class="small-button" id="restartCancelButton" type="button" tabindex="-1">取消</button>
-            <button class="small-button confirm-button" id="restartConfirmButton" type="button" tabindex="-1">重新开始</button>
+            <button class="small-button" id="restartCancelButton" type="button" tabindex="-1">鍙栨秷</button>
+            <button class="small-button confirm-button" id="restartConfirmButton" type="button" tabindex="-1">閲嶆柊寮€濮?/button>
           </div>
         </div>
       </div>
 
-      <!-- 特殊挑战中途退出确认：取消=红底白字 / 退出=蓝底白字（大小与「重开」一致） -->
+      <!-- 鐗规畩鎸戞垬涓€旈€€鍑虹‘璁わ細鍙栨秷=绾㈠簳鐧藉瓧 / 閫€鍑?钃濆簳鐧藉瓧锛堝ぇ灏忎笌銆岄噸寮€銆嶄竴鑷达級 -->
       <div class="overlay" id="challengeExitOverlay" role="dialog" aria-modal="true" aria-labelledby="challengeExitTitle" hidden>
         <div class="overlay-card confirm-card">
-          <h2 id="challengeExitTitle">退出挑战？</h2>
-          <p class="confirm-copy">当前挑战进度将会丢失。</p>
+          <h2 id="challengeExitTitle">閫€鍑烘寫鎴橈紵</h2>
+          <p class="confirm-copy">褰撳墠鎸戞垬杩涘害灏嗕細涓㈠け銆?/p>
           <div class="confirm-actions">
-            <button class="small-button danger-button" id="challengeExitCancelButton" type="button" tabindex="-1">取消</button>
-            <button class="small-button confirm-button" id="challengeExitConfirmButton" type="button" tabindex="-1">退出</button>
+            <button class="small-button danger-button" id="challengeExitCancelButton" type="button" tabindex="-1">鍙栨秷</button>
+            <button class="small-button confirm-button" id="challengeExitConfirmButton" type="button" tabindex="-1">閫€鍑?/button>
           </div>
         </div>
       </div>
 
       <div class="overlay" id="targetOverlay" role="dialog" aria-modal="true" aria-labelledby="targetTitle" hidden>
         <div class="overlay-card target-card">
-          <p class="eyebrow" id="targetEyebrow">选择合成目标</p>
-          <h2 id="targetTitle">你想合成哪位群友？</h2>
-          <p class="target-stats" id="targetStats">已合成成功 0 / 39 位群友</p>
+          <p class="eyebrow" id="targetEyebrow">閫夋嫨鍚堟垚鐩爣</p>
+          <h2 id="targetTitle">浣犳兂鍚堟垚鍝綅缇ゅ弸锛?/h2>
+          <p class="target-stats" id="targetStats">宸插悎鎴愭垚鍔?0 / 39 浣嶇兢鍙?/p>
           <div class="target-scroll">
             <div class="target-grid" id="targetGrid"></div>
           </div>
           <div class="target-actions" id="targetActions">
-            <button class="small-button" id="targetCancelButton" type="button" tabindex="-1" hidden>取消</button>
-            <button class="small-button confirm-button" id="targetRandomButton" type="button" tabindex="-1">随机选择合成目标</button>
-            <button class="small-button" id="targetMenuButton" type="button" tabindex="-1">回到主界面</button>
+            <button class="small-button" id="targetCancelButton" type="button" tabindex="-1" hidden>鍙栨秷</button>
+            <button class="small-button confirm-button" id="targetRandomButton" type="button" tabindex="-1">闅忔満閫夋嫨鍚堟垚鐩爣</button>
+            <button class="small-button" id="targetMenuButton" type="button" tabindex="-1">鍥炲埌涓荤晫闈?/button>
           </div>
         </div>
       </div>
 
-      <!-- Q6 群主彩蛋：禁言提示弹窗（红色 ✕ + 文案） -->
+      <!-- Q6 缇や富褰╄泲锛氱瑷€鎻愮ず寮圭獥锛堢孩鑹?鉁?+ 鏂囨锛?-->
       <div class="mute-toast" id="muteToast" hidden>
-        <span class="toast-x" aria-hidden="true">✕</span>
-        <span class="toast-text">该群友已被禁言</span>
+        <span class="toast-x" aria-hidden="true">鉁?/span>
+        <span class="toast-text">璇ョ兢鍙嬪凡琚瑷€</span>
       </div>
 
-      <!-- ===== 主界面：标题 + pig + 两个选项 ===== -->
+      <!-- ===== 涓荤晫闈細鏍囬 + pig + 涓や釜閫夐」 ===== -->
       <div class="menu-overlay" id="mainMenuOverlay" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
         <div class="overlay-card menu-card">
-          <h1 class="menu-title" id="menuTitle">合成大群友</h1>
-          <!-- Q7 ①被群友包围了：通过「我才是群主」后出现，点击抖动收集 1 只小猪；置于标题与选项之间（原 pig 图已移除） -->
-          <img class="menu-pig-surround" id="menuPigSurround" src="challenge/challenge-pig/pig-unlock/被群友包围了.jpg" alt="被群友包围了">
-          <button class="primary-button menu-start" id="menuStartButton" type="button">开始游玩</button>
-          <button class="small-button menu-challenge" id="menuChallengeButton" type="button">🔒 特殊挑战</button>
+          <h1 class="menu-title" id="menuTitle">鍚堟垚澶х兢鍙?/h1>
+          <!-- Q7 鈶犺缇ゅ弸鍖呭洿浜嗭細閫氳繃銆屾垜鎵嶆槸缇や富銆嶅悗鍑虹幇锛岀偣鍑绘姈鍔ㄦ敹闆?1 鍙皬鐚紱缃簬鏍囬涓庨€夐」涔嬮棿锛堝師 pig 鍥惧凡绉婚櫎锛?-->
+          <img class="menu-pig-surround" id="menuPigSurround" src="challenge/challenge-pig/pig-unlock/琚兢鍙嬪寘鍥翠簡.jpg" alt="琚兢鍙嬪寘鍥翠簡">
+          <button class="primary-button menu-start" id="menuStartButton" type="button">寮€濮嬫父鐜?/button>
+          <button class="small-button menu-challenge" id="menuChallengeButton" type="button">馃敀 鐗规畩鎸戞垬</button>
         </div>
       </div>
 
-      <!-- 主界面提示弹窗（未解锁特殊挑战等） -->
+      <!-- 涓荤晫闈㈡彁绀哄脊绐楋紙鏈В閿佺壒娈婃寫鎴樼瓑锛?-->
       <div class="menu-toast" id="menuToast" hidden>
         <span class="toast-text" id="menuToastText"></span>
       </div>
 
-      <!-- ===== 特殊挑战菜单：我才是群主（第一位）+ 三个空白占位 ===== -->
+      <!-- ===== 鐗规畩鎸戞垬鑿滃崟锛氭垜鎵嶆槸缇や富锛堢涓€浣嶏級+ 涓変釜绌虹櫧鍗犱綅 ===== -->
       <div class="menu-overlay" id="challengeMenuOverlay" role="dialog" aria-modal="true" aria-labelledby="challengeMenuTitle" hidden>
         <div class="overlay-card challenge-menu-card">
-          <p class="eyebrow">特殊挑战</p>
-          <h2 id="challengeMenuTitle">选择挑战</h2>
+          <p class="eyebrow">鐗规畩鎸戞垬</p>
+          <h2 id="challengeMenuTitle">閫夋嫨鎸戞垬</h2>
           <div class="challenge-menu-list" id="challengeMenuList"></div>
           <div class="target-actions">
-            <button class="small-button" id="challengeMenuBackButton" type="button">返回</button>
+            <button class="small-button" id="challengeMenuBackButton" type="button">杩斿洖</button>
           </div>
         </div>
       </div>
 
-      <!-- Q6 特殊挑战「我才是群主」：开场 → 选择禁言 → 结算 -->
+      <!-- Q6 鐗规畩鎸戞垬銆屾垜鎵嶆槸缇や富銆嶏細寮€鍦?鈫?閫夋嫨绂佽█ 鈫?缁撶畻 -->
       <div class="overlay challenge-overlay" id="challengeOverlay" role="dialog" aria-modal="true" hidden>
         <div class="overlay-card challenge-card">
           <div class="challenge-intro" id="challengeIntro">
-            <img class="challenge-avatar" id="challengeAvatar" src="challenge/1.jpg" alt="特殊挑战头像">
-            <p class="challenge-title">特殊挑战</p>
-            <p class="challenge-subtitle">「我才是群主」</p>
+            <img class="challenge-avatar" id="challengeAvatar" src="challenge/1.jpg" alt="鐗规畩鎸戞垬澶村儚">
+            <p class="challenge-title">鐗规畩鎸戞垬</p>
+            <p class="challenge-subtitle">銆屾垜鎵嶆槸缇や富銆?/p>
           </div>
           <div class="challenge-pick" id="challengePick" hidden>
-            <p class="eyebrow">特殊挑战</p>
-            <h2 id="challengePickTitle">选择禁言一个群友</h2>
+            <p class="eyebrow">鐗规畩鎸戞垬</p>
+            <h2 id="challengePickTitle">閫夋嫨绂佽█涓€涓兢鍙?/h2>
             <div class="target-scroll">
               <div class="target-grid" id="challengeGrid"></div>
             </div>
             <div class="challenge-note" id="challengeNote">
-              <p>选项当中有一个是合成目标</p>
-              <p>如果禁言合成目标，则挑战成功</p>
-              <p>否则，需正常完成目标合成</p>
+              <p>閫夐」褰撲腑鏈変竴涓槸鍚堟垚鐩爣</p>
+              <p>濡傛灉绂佽█鍚堟垚鐩爣锛屽垯鎸戞垬鎴愬姛</p>
+              <p>鍚﹀垯锛岄渶姝ｅ父瀹屾垚鐩爣鍚堟垚</p>
             </div>
             <div class="challenge-confirm" id="challengeConfirm" hidden>
-              <p id="challengeConfirmText">确定禁言该群友？</p>
+              <p id="challengeConfirmText">纭畾绂佽█璇ョ兢鍙嬶紵</p>
               <div class="confirm-actions">
-                <button class="small-button" id="challengeConfirmNoButton" type="button" tabindex="-1">取消</button>
-                <button class="small-button confirm-button" id="challengeConfirmYesButton" type="button" tabindex="-1">确定禁言</button>
+                <button class="small-button" id="challengeConfirmNoButton" type="button" tabindex="-1">鍙栨秷</button>
+                <button class="small-button confirm-button" id="challengeConfirmYesButton" type="button" tabindex="-1">纭畾绂佽█</button>
               </div>
             </div>
           </div>
@@ -180,84 +180,84 @@
             <h2 id="challengeResultTitle"></h2>
             <img class="challenge-result-image" id="challengeResultImage" alt="" hidden>
             <div class="confirm-actions" id="challengeResultActions">
-              <button class="small-button" id="challengeRetryButton" type="button" tabindex="-1">重来</button>
-              <button class="small-button confirm-button" id="challengeContinueButton" type="button" tabindex="-1">继续</button>
+              <button class="small-button" id="challengeRetryButton" type="button" tabindex="-1">閲嶆潵</button>
+              <button class="small-button confirm-button" id="challengeContinueButton" type="button" tabindex="-1">缁х画</button>
             </div>
           </div>
-          <!-- Q7 小猪挑战：解锁演出（唱片猪居中 + 挑战名）→ 规则分步展示 -->
+          <!-- Q7 灏忕尓鎸戞垬锛氳В閿佹紨鍑猴紙鍞辩墖鐚眳涓?+ 鎸戞垬鍚嶏級鈫?瑙勫垯鍒嗘灞曠ず -->
           <div class="challenge-pig-intro" id="challengePigIntro" hidden>
-            <img class="challenge-pig-hero" id="challengePigHero" src="challenge/challenge-pig/pig-game/唱片猪(旋转猪).gif" alt="唱片猪">
-            <p class="challenge-title">特殊挑战</p>
-            <p class="challenge-subtitle">「直到群友变成一群小猪」</p>
+            <img class="challenge-pig-hero" id="challengePigHero" src="challenge/challenge-pig/pig-game/鍞辩墖鐚?鏃嬭浆鐚?.gif" alt="鍞辩墖鐚?>
+            <p class="challenge-title">鐗规畩鎸戞垬</p>
+            <p class="challenge-subtitle">銆岀洿鍒扮兢鍙嬪彉鎴愪竴缇ゅ皬鐚€?/p>
           </div>
-          <!-- Q8 Erosion 挑战：解锁演出（黑底白框开场：特殊挑战 / Erosion） -->
+          <!-- Q8 Erosion 鎸戞垬锛氳В閿佹紨鍑猴紙榛戝簳鐧芥寮€鍦猴細鐗规畩鎸戞垬 / Erosion锛?-->
           <div class="challenge-ero-intro" id="challengeEroIntro" hidden>
             <img class="challenge-ero-hero" id="challengeEroHero" src="challenge/erosion.png" alt="Erosion">
-            <p class="challenge-ero-title">特殊挑战</p>
+            <p class="challenge-ero-title">鐗规畩鎸戞垬</p>
             <p class="challenge-ero-subtitle">Erosion</p>
           </div>
           <div class="challenge-pig-rules" id="challengePigRules" hidden>
-            <h2 class="pig-rules-title" id="pigRulesTitle">挑战规则</h2>
-            <p class="pig-rule-line pig-stage" id="pigRuleLine1" hidden>除了群友，小猪也会参与合成</p>
-            <p class="pig-rule-line pig-stage" id="pigRuleLine2" hidden>群友和群友、小猪和小猪之间不能进行合成······</p>
+            <h2 class="pig-rules-title" id="pigRulesTitle">鎸戞垬瑙勫垯</h2>
+            <p class="pig-rule-line pig-stage" id="pigRuleLine1" hidden>闄や簡缇ゅ弸锛屽皬鐚篃浼氬弬涓庡悎鎴?/p>
+            <p class="pig-rule-line pig-stage" id="pigRuleLine2" hidden>缇ゅ弸鍜岀兢鍙嬨€佸皬鐚拰灏忕尓涔嬮棿涓嶈兘杩涜鍚堟垚路路路路路路</p>
             <div class="pig-rule-row pig-stage" id="pigRuleRow1" hidden>
               <img src="challenge/challenge-pig/pig-rule/Polucky.jpg" alt="Polucky">
-              <span class="pig-rule-op">＋</span>
+              <span class="pig-rule-op">锛?/span>
               <img src="challenge/challenge-pig/pig-rule/Polucky.jpg" alt="Polucky">
-              <span class="pig-rule-op pig-rule-ban">→</span>
-              <img src="challenge/challenge-pig/pig-rule/禁止猪叫.jpg" alt="禁止猪叫">
+              <span class="pig-rule-op pig-rule-ban">鈫?/span>
+              <img src="challenge/challenge-pig/pig-rule/绂佹鐚彨.jpg" alt="绂佹鐚彨">
             </div>
             <div class="pig-rule-row pig-stage" id="pigRuleRow2" hidden>
-              <img src="challenge/challenge-pig/pig-rule/特小猪.jpg" alt="特小猪">
-              <span class="pig-rule-op">＋</span>
-              <img src="challenge/challenge-pig/pig-rule/特小猪.jpg" alt="特小猪">
-              <span class="pig-rule-op pig-rule-ban">→</span>
-              <img src="challenge/challenge-pig/pig-rule/禁止猪叫.jpg" alt="禁止猪叫">
+              <img src="challenge/challenge-pig/pig-rule/鐗瑰皬鐚?jpg" alt="鐗瑰皬鐚?>
+              <span class="pig-rule-op">锛?/span>
+              <img src="challenge/challenge-pig/pig-rule/鐗瑰皬鐚?jpg" alt="鐗瑰皬鐚?>
+              <span class="pig-rule-op pig-rule-ban">鈫?/span>
+              <img src="challenge/challenge-pig/pig-rule/绂佹鐚彨.jpg" alt="绂佹鐚彨">
             </div>
-            <p class="pig-rule-line pig-stage" id="pigRuleLine3" hidden>但是，群友和相同大小的小猪可以合成一只更大的小猪！</p>
+            <p class="pig-rule-line pig-stage" id="pigRuleLine3" hidden>浣嗘槸锛岀兢鍙嬪拰鐩稿悓澶у皬鐨勫皬鐚彲浠ュ悎鎴愪竴鍙洿澶х殑灏忕尓锛?/p>
             <div class="pig-rule-row pig-stage" id="pigRuleRow3" hidden>
               <img src="challenge/challenge-pig/pig-rule/Polucky.jpg" alt="Polucky">
-              <span class="pig-rule-op">＋</span>
-              <img src="challenge/challenge-pig/pig-rule/特小猪.jpg" alt="特小猪">
-              <span class="pig-rule-op">＝</span>
-              <img src="challenge/challenge-pig/pig-rule/特大猪.png" alt="特大猪">
+              <span class="pig-rule-op">锛?/span>
+              <img src="challenge/challenge-pig/pig-rule/鐗瑰皬鐚?jpg" alt="鐗瑰皬鐚?>
+              <span class="pig-rule-op">锛?/span>
+              <img src="challenge/challenge-pig/pig-rule/鐗瑰ぇ鐚?png" alt="鐗瑰ぇ鐚?>
             </div>
-            <p class="pig-rule-line pig-stage" id="pigRuleLine4" hidden>尽可能把群友们都变成小猪吧！</p>
+            <p class="pig-rule-line pig-stage" id="pigRuleLine4" hidden>灏藉彲鑳芥妸缇ゅ弸浠兘鍙樻垚灏忕尓鍚э紒</p>
             <div class="pig-rule-actions pig-stage" id="pigRuleActions" hidden>
-              <button class="small-button confirm-button" id="pigStartChallengeButton" type="button" tabindex="-1">开始挑战</button>
+              <button class="small-button confirm-button" id="pigStartChallengeButton" type="button" tabindex="-1">寮€濮嬫寫鎴?/button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Q7 小猪收集：②被捕捉的小猪（20% 落下 / 失败后左下角重试入口） -->
-      <img class="pig-captured" id="pigCaptured" src="challenge/challenge-pig/pig-unlock/被捕捉的小猪.gif" alt="被捕捉的小猪" hidden>
+      <!-- Q7 灏忕尓鏀堕泦锛氣憽琚崟鎹夌殑灏忕尓锛?0% 钀戒笅 / 澶辫触鍚庡乏涓嬭閲嶈瘯鍏ュ彛锛?-->
+      <img class="pig-captured" id="pigCaptured" src="challenge/challenge-pig/pig-unlock/琚崟鎹夌殑灏忕尓.gif" alt="琚崟鎹夌殑灏忕尓" hidden>
 
-      <!-- Q7 失败重试弹窗：🐖要重新挑战吗？🐖 -->
+      <!-- Q7 澶辫触閲嶈瘯寮圭獥锛氿煇栬閲嶆柊鎸戞垬鍚楋紵馃悥 -->
       <div class="overlay pig-retry-overlay" id="pigRetryOverlay" role="dialog" aria-modal="true" hidden>
         <div class="overlay-card confirm-card">
-          <h2 class="pig-retry-title">🐖要重新挑战吗？🐖</h2>
+          <h2 class="pig-retry-title">馃悥瑕侀噸鏂版寫鎴樺悧锛燄煇?/h2>
           <div class="confirm-actions">
-            <button class="small-button danger-button" id="pigRetryExitButton" type="button" tabindex="-1">退出</button>
-            <button class="small-button confirm-button" id="pigRetryGoButton" type="button" tabindex="-1">来！！！</button>
+            <button class="small-button danger-button" id="pigRetryExitButton" type="button" tabindex="-1">閫€鍑?/button>
+            <button class="small-button confirm-button" id="pigRetryGoButton" type="button" tabindex="-1">鏉ワ紒锛侊紒</button>
           </div>
         </div>
       </div>
 
-      <!-- Q8 Erosion 失败重试弹窗：要重新挑战吗？（选项与小猪挑战一致） -->
+      <!-- Q8 Erosion 澶辫触閲嶈瘯寮圭獥锛氳閲嶆柊鎸戞垬鍚楋紵锛堥€夐」涓庡皬鐚寫鎴樹竴鑷达級 -->
       <div class="overlay pig-retry-overlay" id="eroRetryOverlay" role="dialog" aria-modal="true" hidden>
         <div class="overlay-card confirm-card">
-          <h2 class="pig-retry-title">要重新挑战吗？</h2>
+          <h2 class="pig-retry-title">瑕侀噸鏂版寫鎴樺悧锛?/h2>
           <div class="confirm-actions">
-            <button class="small-button danger-button" id="eroRetryExitButton" type="button" tabindex="-1">退出</button>
-            <button class="small-button confirm-button" id="eroRetryGoButton" type="button" tabindex="-1">来！！！</button>
+            <button class="small-button danger-button" id="eroRetryExitButton" type="button" tabindex="-1">閫€鍑?/button>
+            <button class="small-button confirm-button" id="eroRetryGoButton" type="button" tabindex="-1">鏉ワ紒锛侊紒</button>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- 仿照「合成大院系」（整体架构照搬 https://bu.eltaos.top/ / GreatUSTC）的页面结构 -->
+  <!-- 浠跨収銆屽悎鎴愬ぇ闄㈢郴銆嶏紙鏁翠綋鏋舵瀯鐓ф惉 https://bu.eltaos.top/ / GreatUSTC锛夌殑椤甸潰缁撴瀯 -->
   <script src="game-config.js?v=23"></script>
-  <script src="game.js?v=57"></script>
+  <script src="game.js?v=58"></script>
 </body></html>

@@ -2291,6 +2291,7 @@
     challengePhase = "success";
     targetAchieved = true;   /* 冻结投放，警戒线不再触发失败 */
     readyToDrop = false;
+    updateControls();   /* 结算等待期锁定重开/退出，防止清除结算定时器 */
     if (challengeKind === "ero") {
       /* Erosion 挑战成功：以合成目标为中心，四周黑色缓慢向外退散露出小球与棋盘
        * （不变白），完全露出后才弹出结算画面 */
@@ -2910,10 +2911,15 @@
     /* 挑战对局中「换目标」变为「退出」（移到「重开」右边）；
      * 「重开」：小猪挑战与「从特殊挑战菜单重新游玩的我才是群主」可用；
      * Erosion 仅解锁演出的首局禁用重开和退出，解锁后从菜单进入恢复正常；
-     * 彩蛋首入的群主挑战禁用重开；各挑战最高分独立计算 */
+     * 彩蛋首入的群主挑战禁用重开和退出（解锁对局一锤定音）；
+     * 结算等待期（成功礼花 / 失败定格 → 结算面板弹出前）锁定重开与退出，
+     * 防止点击清除结算定时器导致结算面板不再弹出；
+     * 各挑战最高分独立计算 */
     var ownerFromMenu = challengeActive && challengeKind === "owner" && challengeEntry === "menu";
     var restartAllowed = !challengeActive || challengeKind === "pig" || ownerFromMenu
       || (challengeKind === "ero" && challengeEntry !== "unlock");
+    var resultPending = challengeActive && (challengePhase === "success" || challengePhase === "failed");
+    var ownerEggEntry = challengeActive && challengeKind === "owner" && challengeEntry === "egg";
     if (challengeActive) {
       targetButton.textContent = "退出";
       if (headerActions && headerActions.appendChild) {
@@ -2925,9 +2931,11 @@
         headerActions.insertBefore(targetButton, restartButton);   /* 顺序：声音 / 换目标 / 重开 */
       }
     }
-    restartButton.disabled = mode !== "playing" || !restartAllowed;
+    restartButton.disabled = mode !== "playing" || !restartAllowed || resultPending;
     targetButton.disabled = mode !== "playing"
-      || (challengeActive && challengeKind === "ero" && challengeEntry === "unlock");
+      || (challengeActive && challengeKind === "ero" && challengeEntry === "unlock")
+      || ownerEggEntry
+      || resultPending;
   }
 
   function updateSoundControl() {
@@ -3064,6 +3072,7 @@
     if (challengeActive) {
       /* 特殊挑战失败：不弹常规结算卡，改走挑战结算（重来 / 继续）；同样记录最高分 */
       challengePhase = "failed";
+      updateControls();   /* 结算等待期锁定重开/退出（Erosion 失败有 2.4s 黑化等待） */
       if (challengeKind === "ero") {
         /* Erosion 挑战失败：警戒线/标题栏/画面逐渐黑化 → 弹出失败说明；
          * 记录失败标记 → 特殊挑战菜单第三栏变全黑，点击询问是否重新挑战 */
@@ -4900,6 +4909,9 @@
   });
 
   addPointerClickListener(targetButton, function () {
+    if (targetButton.disabled) {
+      return;   /* 解锁对局 / 结算等待期：退出不可用 */
+    }
     if (challengeActive) {
       /* 退出前确认：取消（红底白字）/ 退出（蓝底白字） */
       mode = "confirming";
@@ -4921,6 +4933,11 @@
   addPointerClickListener(challengeExitConfirmButton, function () {
     if (challengeExitOverlay) {
       challengeExitOverlay.hidden = true;
+    }
+    if (challengeActive && (challengePhase === "success" || challengePhase === "failed")) {
+      mode = "playing";
+      updateControls();
+      return;   /* 结算等待期不允许退出（结算面板即将弹出） */
     }
     exitChallengeToMenu();   /* 确认退出 → 回到「特殊挑战」选择菜单 */
   });
@@ -5051,10 +5068,8 @@
   }
 
   addPointerClickListener(restartButton, function () {
-    var ownerFromMenu = challengeActive && challengeKind === "owner" && challengeEntry === "menu";
-    var restartAllowed = !challengeActive || challengeKind === "pig" || ownerFromMenu;
-    if (mode !== "playing" || !restartAllowed) {
-      return;
+    if (mode !== "playing" || restartButton.disabled) {
+      return;   /* 结算等待期 / 解锁对局 / 不允许重开的挑战：重开不可用 */
     }
     mode = "confirming";
     resetFrameClock();
