@@ -240,6 +240,10 @@
   var ERO_IDLE_TRIGGER = 3;                 /* 异常局：合成出 10 级球后静止 3 秒开始上蔓延 */
   var ERO_RISE_DURATION = 7;                /* 黑色从底部蔓延到棋盘顶用时（秒） */
   var ERO_RETREAT_DURATION = 2.2;           /* 投放打断后黑色退回底部用时（秒） */
+  var ERO_TEASE_PEAK = 0.12;                /* 10 级球合成瞬间：黑色试探上升高度（棋盘占比） */
+  var ERO_TEASE_RISE = 0.4;                 /* 试探上升用时（秒） */
+  var ERO_TEASE_DROP = 0.22;                /* 试探后突然落回用时（秒） */
+  var eroTeaseAge = -1;                     /* 「先升一点后突然落下」演出计时（-1=未在演出） */
   var ERO_BASE_FRONT = 0.03;                /* 异常局底部初始黑色高度（棋盘高的 3%，遮挡小球） */
   var ERO_FOCUS_MAX_AGE = 2.2;              /* 单颗亮着的小球视野跟随时长上限（秒）：到点强制交棒 */
   var ERO_REVEAL_DURATION = 3.4;            /* 成功后黑色以目标为中心向外退散露出全场的时长（秒，缓慢） */
@@ -988,6 +992,7 @@
     eroFrontState = "idle";
     eroIdleTime = 0;
     eroArmed = false;
+    eroTeaseAge = -1;
     eroUnlocking = false;
     LEVELS = buildLevelsFor(college.key);
     LEVEL_ASSETS = preloadLevelAssets();
@@ -3015,6 +3020,7 @@
     eroFrontState = "idle";
     eroIdleTime = 0;
     eroArmed = false;
+    eroTeaseAge = -1;
     eroUnlocking = false;
     eroFocusBody = null;
     eroFocusStable = 0;
@@ -3605,9 +3611,13 @@
       });
       maxLevelReached = Math.max(maxLevelReached, newLevel);
       if (eroGameActive && newLevel === 10 && !eroArmed) {
-        /* Q8 异常局：合成出 10 级球 → 黑色蔓延机制解锁 */
+        /* Q8 异常局：合成出 10 级球 → 黑色蔓延机制解锁；
+         * 先来一段「上升一点 → 突然落回」的试探演出，落定后才开始无操作计时 */
         eroArmed = true;
         eroIdleTime = 0;
+        eroFront = 0;
+        eroFrontState = "idle";
+        eroTeaseAge = 0;
       }
       highestMergedLevel = Math.max(highestMergedLevel, newLevel);
     });
@@ -3835,9 +3845,22 @@
     }
 
     if (eroGameActive && !eroUnlocking) {
-      /* Q8 异常局：静止 5 秒 → 黑色上蔓延；到达棋盘顶 → 进入解锁挑战；
+      /* Q8 异常局：合成出 10 级球 → 黑色先上升一点随即突然落回（试探演出），
+       * 落定后静止 3 秒 → 黑色上蔓延；到达棋盘顶 → 进入解锁挑战；
        * 蔓延途中投放 → 退回底部（投放时已切换状态） */
-      if (eroFrontState === "rising") {
+      if (eroTeaseAge >= 0) {
+        eroTeaseAge += dt;
+        if (eroTeaseAge < ERO_TEASE_RISE) {
+          eroFront = ERO_TEASE_PEAK * (eroTeaseAge / ERO_TEASE_RISE);          /* 先上升一点 */
+        } else if (eroTeaseAge < ERO_TEASE_RISE + ERO_TEASE_DROP) {
+          eroFront = Math.max(0, ERO_TEASE_PEAK
+            * (1 - (eroTeaseAge - ERO_TEASE_RISE) / ERO_TEASE_DROP));          /* 随即突然下降 */
+        } else {
+          eroFront = 0;
+          eroTeaseAge = -1;
+          eroIdleTime = 0;   /* 落定后才开始 3 秒无操作计时 */
+        }
+      } else if (eroFrontState === "rising") {
         eroFront = Math.min(1.06, eroFront + dt / ERO_RISE_DURATION);
         if (eroFront >= 1) {
           triggerEroUnlock();
@@ -4806,6 +4829,7 @@
         front: eroFront,
         frontState: eroFrontState,
         armed: eroArmed,
+        teasing: eroTeaseAge >= 0,
         unlocking: eroUnlocking,
         focusBall: !!eroFocusBody,
         revealing: !!eroReveal,
