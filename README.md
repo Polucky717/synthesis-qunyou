@@ -19,7 +19,7 @@ game.js             自研物理 + 全部游戏逻辑（原站代码 + P1/P2/P3 
 make-badges.bat     ★ 双击：扫描 profile\ 重建配置并生成圆形头像徽章
 make-badges.ps1     素材生成脚本（GDI+/WIC：QQ 头像式裁方铺满 + 统一黑色描边 + EXIF 矫正）
 profile/            ★ 群友照片（增删这里，昵称 = 文件名）
-challenge/          特殊挑战素材（challenge/1.jpg 终章开场头像；challenge-pig/ 第二个挑战「直到群友变成一群小猪」全部素材与需求文档）
+challenge/          特殊挑战素材
 assets/img/round/   生成的圆形头像徽章（游戏实际读取）
 test/smoke.test.js  冒烟测试
 ```
